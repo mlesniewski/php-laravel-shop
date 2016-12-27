@@ -105,7 +105,9 @@
             </div><!--/header-bottom-->
         </header><!--/header-->
 
+
         @yield('content')
+
 
         <footer id="footer"><!--Footer-->
             <div class="footer-top">
