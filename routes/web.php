@@ -44,8 +44,44 @@ Route::get('blade', function () {
     return view('page',array('name' => 'The Raven','day' => 'Friday','drinks' => $drinks));
 });
 
+Route::get('/insert', function() {
+    App\Category::create(array('name' => 'Music'));
+    return 'category added';
+});
 
+Route::get('/read', function() {
+    $category = new App\Category();
+    
+    $data = $category->all(array('name','id'));
 
+    foreach ($data as $list) {
+        echo $list->id . ' ' . $list->name . "<br>";
+    }
+});
 
+Route::get('/update', function() {
+    $category = App\Category::find(6);
+    $category->name = 'HEAVY METAL';
+    $category->save();
+    
+    $data = $category->all(array('name','id'));
 
+    foreach ($data as $list) {
+        echo $list->id . ' ' . $list->name . "<br>";
+    }
+});
+
+Route::get('/delete', function() {
+    $category = App\Category::find(5);
+    $category->delete();
+    
+    $data = $category->all(array('name','id'));
+
+    foreach ($data as $list) {
+        echo $list->id . ' ' . $list->name . '
+';
+    }
+});
+
+Route::post('/cart', 'Front@cart');
 
