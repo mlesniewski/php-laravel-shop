@@ -9,6 +9,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Redirect;
 use Cart;
+use App\User;
+use Illuminate\Support\Facades\Auth;
 
 class Front extends Controller {
 
@@ -61,9 +63,9 @@ class Front extends Controller {
         return view('login', array('title' => 'Welcome','description' => '','page' => 'home'));
     }
 
-    public function logout() {
-        return view('login', array('title' => 'Welcome','description' => '','page' => 'home'));
-    }
+//    public function logout() {
+//        return view('login', array('title' => 'Welcome','description' => '','page' => 'home'));
+//    }
 
     public function cart() {
         if (Request::isMethod('post')) {
@@ -71,10 +73,32 @@ class Front extends Controller {
         $product = Product::find($product_id);
         Cart::add(array('id' => $product_id, 'name' => $product->name, 'qty' => 1, 'price' => $product->price));
     }
+    
+        //increment the quantity
+    if (Request::get('product_id') && (Request::get('increment')) == 1) {
+        $rowId = Cart::search(array('id' => Request::get('product_id')));
+        $item = Cart::get($rowId[0]);
+
+        Cart::update($rowId[0], $item->qty + 1);
+    }
+
+    //decrease the quantity
+    if (Request::get('product_id') && (Request::get('decrease')) == 1) {
+        $rowId = Cart::search(array('id' => Request::get('product_id')));
+        $item = Cart::get($rowId[0]);
+
+        Cart::update($rowId[0], $item->qty - 1);
+    }
 
     $cart = Cart::content();
 
     return view('cart', array('cart' => $cart, 'title' => 'Welcome', 'description' => '', 'page' => 'home'));
+    }
+    
+    public function clear_cart() {
+        Cart::destroy();
+//        $this->index();
+        Return redirect('/');
     }
 
     public function checkout() {
@@ -84,4 +108,32 @@ class Front extends Controller {
     public function search($query) {
         return view('products', array('title' => 'Welcome','description' => '','page' => 'products'));
     }
+    
+    public function register() {
+    if (Request::isMethod('post')) {
+        User::create([
+                    'name' => Request::get('name'),
+                    'email' => Request::get('email'),
+                    'password' => bcrypt(Request::get('password')),
+        ]);
+    } 
+    
+    return Redirect::away('auth/login');
+    }
+    
+    public function authenticate() {
+    if (Auth::attempt(['email' => Request::get('email'), 'password' => Request::get('password')])) {
+        return redirect()->intended('checkout');
+    } else {
+        return view('login', array('title' => 'Welcome', 'description' => '', 'page' => 'home'));
+    }
+    }
+
+
+    public function logout() {
+    Auth::logout();
+    
+    return Redirect::away('login');
+    }
+    
 }
